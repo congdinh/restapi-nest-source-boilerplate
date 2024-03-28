@@ -84,8 +84,9 @@ Follow all step bellow to setup your dev environment
 
 6. Health check:
 
-- Server is listening on: http://[::1]:9008/api/v3
-- Server health: http://[::1]:9008/api/v3/process/health
+- Server is listening on: http://[::1]:9008/api/v1
+- Server health: http://[::1]:9008/api/v1/demo/health
+- Documentation: http://[::1]:9008/swagger
 
 ### Building
 
@@ -129,7 +130,7 @@ On `.env`, you must config all environment variables bellow. By default, `.env.e
 
 ```
 PORT = 9008
-PREFIX = api/v3/
+PREFIX = api/v1/
 JWT_SECRET = 123123
 
 SERVER_CORS_ENABLED=true
@@ -167,7 +168,7 @@ Test with coverage information
 
 - [Current] `stable`: All code is on `master`
 
-- v3.0.0: Init Project
+- v1.0.0: Init Project
 
 ## Contributing
 
