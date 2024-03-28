@@ -1,0 +1,10 @@
+apps:
+  - script: ./dist/schedules/demo.js
+    exec_mode: fork
+    name: 'schedule-demo'
+    env:
+      NODE_ENV: 'production'
+      PORT: 9009
+    env_production:
+      NODE_ENV: 'production'
+      PORT: 9009

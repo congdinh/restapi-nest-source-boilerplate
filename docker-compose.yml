@@ -1,0 +1,91 @@
+version: '3.8'
+services:
+  redis-single:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+    container_name: redis-single
+    hostname: redis-single
+    command: redis-server --save 20 1 --loglevel warning
+    network_mode: host
+    volumes:
+      - data-redis-single:/data
+
+  mongodb:
+    image: mongo:4.4
+    container_name: service-mongodb
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    network_mode: host
+    volumes:
+      - mongo-data:/data/db
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    container_name: service-es-node
+    hostname: service-es-node
+    environment:
+      - ELASTIC_PASSWORD=${DEFAULT_PASSWORD}
+      - network.host=0.0.0.0
+      - xpack.license.self_generated.type=basic
+      - xpack.security.enabled=false
+      - node.name=service-es-node
+      - node.roles=["master", "data"]
+      - node.attr.box_type=hot
+      - cluster.name=es-master-cluster
+      - cluster.initial_master_nodes=service-es-node
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+      - xpack.ml.enabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    network_mode: host
+    volumes:
+      - data-es:/usr/share/elasticsearch/data
+
+  service-demo:
+    build:
+      context: .
+    image: service/service-demo:latest
+    container_name: service-demo
+    restart: unless-stopped
+    ports:
+      - $PORT:$PORT
+    env_file:
+      - ./.env
+    depends_on:
+      - redis-single
+      - mongodb
+      - elasticsearch
+    network_mode: host
+
+  schedule-demo:
+    image: service/service-demo:latest
+    container_name: schedule-demo
+    restart: unless-stopped
+    environment:
+      - PORT=9009
+    ports:
+      - 9009:9009
+    env_file:
+      - ./.env
+    command: /bin/sh -c "pm2-runtime start pm2/schedules.yml"
+    depends_on:
+      - redis-single
+      - mongodb
+      - elasticsearch
+      - service-demo
+    network_mode: host
+
+volumes:
+  mongo-data:
+    driver: local
+  data-redis-single:
+    driver: local
+  data-es:
+    driver: local
